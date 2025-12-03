@@ -65,7 +65,7 @@ function App() {
   const [accessToken, setAccessToken] = useState(() => {
     try {
       const data = window.localStorage.getItem("accessToken");
-      return data || null;
+      return data ? data : null;
     } catch (error) {
       console.log("Failed to parse access token from localStorage:", error);
       return null;
@@ -83,12 +83,21 @@ function App() {
   });
 
   useEffect(() => {
-    window.localStorage.setItem("accessToken", JSON.stringify(accessToken));
+    if (accessToken === null) {
+      localStorage.removeItem("accessToken");
+    } else {
+      localStorage.setItem("accessToken", accessToken);
+    }
   }, [accessToken]);
 
   useEffect(() => {
-    window.localStorage.setItem("profile", JSON.stringify(profile));
+    if (profile === null) {
+      localStorage.removeItem("profile");
+    } else {
+      localStorage.setItem("profile", JSON.stringify(profile));
+    }
   }, [profile]);
+
   return (
     <AuthContext.Provider value={{ accessToken, setAccessToken }}>
       <ProfileContext.Provider value={{ profile, setProfile }}>
