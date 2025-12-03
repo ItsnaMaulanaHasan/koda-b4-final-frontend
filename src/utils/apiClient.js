@@ -1,5 +1,8 @@
 export const apiClient = async (url, options = {}) => {
-  const accessToken = localStorage.getItem("accessToken").replace(/^"|"$/g, "");
+  const accessToken = (localStorage.getItem("accessToken") || "").replace(
+    /^"|"$/g,
+    ""
+  );
 
   let response = await fetch(url, {
     ...options,
