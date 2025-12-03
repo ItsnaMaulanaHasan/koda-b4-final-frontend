@@ -65,7 +65,7 @@ function App() {
   const [accessToken, setAccessToken] = useState(() => {
     try {
       const data = window.localStorage.getItem("accessToken");
-      return data ? JSON.parse(data) : null;
+      return data || null;
     } catch (error) {
       console.log("Failed to parse access token from localStorage:", error);
       return null;
