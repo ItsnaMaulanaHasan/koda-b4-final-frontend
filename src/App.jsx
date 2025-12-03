@@ -1,4 +1,9 @@
+import { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { AuthContext } from "./context/AuthContext";
+import { ProfileContext } from "./context/ProfileContext";
+import ProtectedRoute from "./context/ProtectedRoute";
+import AuthLayout from "./layouts/AuthLayout";
 import MainLayout from "./layouts/MainLayout";
 import DashboardPage from "./pages/DashboardPage";
 import LandingPage from "./pages/LandingPage";
@@ -17,30 +22,80 @@ const router = createBrowserRouter([
       },
       {
         path: "/dashboard",
-        element: <DashboardPage />,
+        element: (
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/links",
-        element: <LinksManagementPage />,
+        element: (
+          <ProtectedRoute>
+            <LinksManagementPage />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/settings",
-        element: <SettingPage />,
+        element: (
+          <ProtectedRoute>
+            <SettingPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
   {
-    element: <LoginPage />,
-    path: "/auth/login",
-  },
-  {
-    element: <RegisterPage />,
-    path: "/auth/register",
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "/auth/register",
+        element: <RegisterPage />,
+      },
+      {
+        path: "/auth/login",
+        element: <LoginPage />,
+      },
+    ],
   },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  const [accessToken, setAccessToken] = useState(() => {
+    try {
+      const data = window.localStorage.getItem("accessToken");
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.log("Failed to parse access token from localStorage:", error);
+      return null;
+    }
+  });
+
+  const [profile, setProfile] = useState(() => {
+    try {
+      const data = window.localStorage.getItem("profile");
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.log("Failed to parse profile from localStorage:", error);
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem("accessToken", JSON.stringify(accessToken));
+  }, [accessToken]);
+
+  useEffect(() => {
+    window.localStorage.setItem("profile", JSON.stringify(profile));
+  }, [profile]);
+  return (
+    <AuthContext.Provider value={{ accessToken, setAccessToken }}>
+      <ProfileContext.Provider value={{ profile, setProfile }}>
+        <RouterProvider router={router} />
+      </ProfileContext.Provider>
+    </AuthContext.Provider>
+  );
 }
 
 export default App;
