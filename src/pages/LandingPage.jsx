@@ -1,17 +1,69 @@
 import { Check, Copy, Shield, TrendingUp, Zap } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { apiClient } from "../utils/apiClient";
 
 function LandingPage() {
+  const { accessToken } = useContext(AuthContext);
+  const isLoggedIn = !!accessToken;
+
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleShorten = () => {
-    if (url.trim()) {
-      const randomCode = Math.random().toString(36).substring(2, 8);
-      setShortUrl(`koda.link/${randomCode}`);
+  const handleShorten = async () => {
+    if (!url.trim()) {
+      setError("Please enter a URL");
+      return;
+    }
+
+    try {
+      new URL(url);
+    } catch {
+      setError("Please enter a valid URL");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await apiClient(
+        import.meta.env.VITE_BASE_URL + "/api/v1/links",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            originalUrl: url,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || "Failed to create short link");
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create short link");
+      }
+
+      setShortUrl(result.data.shortUrl);
       setShowResult(true);
+    } catch (err) {
+      let errorMessage = "Failed to create short link";
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (!navigator.onLine) {
+        errorMessage = "No internet connection";
+      }
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,15 +96,27 @@ function LandingPage() {
             type="text"
             placeholder="Enter your long URL here..."
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 px-5 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+            onChange={(e) => {
+              setUrl(e.target.value);
+              setError("");
+            }}
+            disabled={isLoading}
+            className="flex-1 px-5 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <button
             onClick={handleShorten}
-            className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition whitespace-nowrap">
-            Shorten
+            disabled={isLoading}
+            className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition whitespace-nowrap disabled:bg-blue-400 disabled:cursor-not-allowed">
+            {isLoading ? "Shortening..." : "Shorten"}
           </button>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600 text-center">{error}</p>
+          </div>
+        )}
       </div>
 
       {/* result section */}
@@ -86,7 +150,9 @@ function LandingPage() {
               </button>
             </div>
             <p className="text-xs text-gray-500 text-center mt-3">
-              Sign in to track analytics and manage your links
+              {isLoggedIn
+                ? "Link created successfully! View your analytics in the dashboard."
+                : "Sign in to track analytics and manage your links"}
             </p>
           </div>
         </div>
