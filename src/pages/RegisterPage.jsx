@@ -269,7 +269,9 @@ function RegisterPage() {
         {/* sign in link */}
         <p className="text-center mt-6 text-sm text-gray-600">
           Already have an account?{" "}
-          <button className="text-blue-600 hover:text-blue-700 font-medium">
+          <button
+            onClick={() => navigate("/auth/login")}
+            className="text-blue-600 hover:text-blue-700 font-medium">
             Sign in
           </button>
         </p>
