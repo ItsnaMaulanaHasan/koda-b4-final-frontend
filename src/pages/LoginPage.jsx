@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Link2, Lock, Mail } from "lucide-react";
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ScrollRestoration } from "react-router-dom";
+import { ScrollRestoration, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import Alert from "../components/Alert";
 import { AuthContext } from "../context/AuthContext";
@@ -25,6 +25,7 @@ function LoginPage() {
   const [isLogginIn, setIsLogginIn] = useState(false);
   const { setAccessToken } = useContext(AuthContext);
   const { setProfile } = useContext(ProfileContext);
+  const navigate = useNavigate();
 
   const {
     register,
@@ -196,7 +197,7 @@ function LoginPage() {
               <button
                 disabled={isLogginIn}
                 type="submit"
-                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition">
+                className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition disabled:cursor-not-allowed">
                 {!isLogginIn ? "Sign In" : "Logging In..."}
               </button>
             </form>
@@ -221,7 +222,9 @@ function LoginPage() {
         {/* sign up link */}
         <p className="text-center mt-6 text-sm text-gray-600">
           Don't have an account?{" "}
-          <button className="text-blue-600 hover:text-blue-700 font-medium">
+          <button
+            onClick={() => navigate("/auth/register")}
+            className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
             Sign up
           </button>
         </p>

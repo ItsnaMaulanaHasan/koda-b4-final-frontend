@@ -146,7 +146,7 @@ function Navbar() {
             {isLoggedIn ? (
               <>
                 <button
-                  onClick={() => navigate("/create-link")}
+                  onClick={() => navigate("/")}
                   className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition flex items-center gap-2">
                   <span className="text-lg">+</span>
                   Create Short Link
