@@ -5,21 +5,76 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { ProfileContext } from "../context/ProfileContext";
+import Alert from "./Alert";
+import ModalConfirmation from "./ModalConfirmation";
 
 function Navbar() {
   const navigate = useNavigate();
-  const { accessToken } = useContext(AuthContext);
+  const { accessToken, setAccessToken } = useContext(AuthContext);
+  const { setProfile } = useContext(ProfileContext);
   const isLoggedIn = !!accessToken;
+  const [showModal, setShowModal] = useState(false);
+  const [alertStatus, setAlertStatus] = useState({ type: "", message: "" });
 
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      const res = await fetch(
+        import.meta.env.VITE_BASE_URL + "/api/v1/auth/logout",
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.error || "Failed to logout");
+      }
+
+      const result = await res.json();
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      setAccessToken("");
+      setProfile(null);
+      navigate("/auth/login");
+    } catch (error) {
+      let errorMessage = "Failed to logout";
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (!navigator.onLine) {
+        errorMessage = "No internet connection";
+      }
+      setAlertStatus({
+        type: "error",
+        message: errorMessage,
+      });
+    }
   };
 
   return (
     <header className="bg-white border-b border-gray-200">
+      <Alert
+        type={alertStatus.type}
+        message={alertStatus.message}
+        onClose={() => setAlertStatus({ type: "", message: "" })}
+      />
+      <ModalConfirmation
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={handleLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        type="warning"
+      />
       <div
         className={`${
           isLoggedIn ? "max-w-7xl" : "max-w-6xl"
@@ -75,7 +130,9 @@ function Navbar() {
                   Settings
                 </NavLink>
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    setShowModal(true);
+                  }}
                   className="p-2 flex gap-2 items-center text-gray-600 hover:text-gray-900 cursor-pointer"
                   title="Logout">
                   <LogOut className="w-5 h-5" />
