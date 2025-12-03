@@ -214,7 +214,7 @@ function LoginPage() {
           <button
             onClick={handleGoogleLogin}
             className="w-full py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition flex items-center justify-center gap-3">
-            <img src="/public/icons/google-icon.svg" alt="Icon Google" />
+            <img src="/icons/google-icon.svg" alt="Icon Google" />
             <span className="text-gray-700">Continue with Google</span>
           </button>
         </div>
