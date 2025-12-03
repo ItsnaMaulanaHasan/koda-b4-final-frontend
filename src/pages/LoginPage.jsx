@@ -7,6 +7,7 @@ import * as yup from "yup";
 import Alert from "../components/Alert";
 import { AuthContext } from "../context/AuthContext";
 import { ProfileContext } from "../context/ProfileContext";
+import { apiClient } from "../utils/apiClient";
 
 const LoginFormSchema = yup.object({
   email: yup
@@ -45,6 +46,7 @@ function LoginPage() {
         import.meta.env.VITE_BASE_URL + "/api/v1/auth/login",
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
@@ -65,13 +67,8 @@ function LoginPage() {
 
       const token = resultLogin.data.accessToken;
 
-      const resProfile = await fetch(
-        import.meta.env.VITE_BASE_URL + "/api/v1/users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const resProfile = await apiClient(
+        import.meta.env.VITE_BASE_URL + "/api/v1/users"
       );
 
       if (!resProfile.ok) {
