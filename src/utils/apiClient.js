@@ -5,6 +5,7 @@ export const apiClient = async (url, options = {}) => {
     ...options,
     credentials: "include",
     headers: {
+      "Content-Type": "application/json",
       ...options.headers,
       ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     },
